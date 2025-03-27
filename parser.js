@@ -7,6 +7,12 @@ const puppeteer = require('puppeteer-core');
 const proxyChain = require('proxy-chain');
 const { setTimeout } = require('timers/promises');
 
+// ==================== ВСПОМОГАТЕЛЬНАЯ ФУНКЦИЯ ДЛЯ ВРЕМЕНИ ====================
+function getLocalTimestamp() {
+  // Возвращает дату и время в часовом поясе America/Los_Angeles в формате, похожем на ISO
+  return new Date().toLocaleString('en-US', { timeZone: 'America/Los_Angeles', hour12: false });
+}
+
 // ==================== НАСТРОЙКИ ====================
 const CONFIG = {
   // Эти параметры будут меняться динамически из листа "settings"
@@ -252,7 +258,8 @@ async function processRow(rowData, rowIndex, sheets) {
 
         const totalQuantity = data.length.toString();
         const responseJson = JSON.stringify(data);
-        const recordingDate = new Date().toISOString();
+        // Используем getLocalTimestamp() вместо new Date().toISOString()
+        const recordingDate = getLocalTimestamp();
 
         // Обновляем в Sheets (колонки E, F, G, H)
         await updateSpreadsheet(sheets, rowIndex, [
@@ -293,7 +300,7 @@ async function processRow(rowData, rowIndex, sheets) {
             'Not processed',
             '0',
             `Ошибка: ${err.message}`,
-            new Date().toISOString()
+            getLocalTimestamp()
           ]);
         }
       }
@@ -307,7 +314,7 @@ async function processRow(rowData, rowIndex, sheets) {
       'Not processed',
       '0',
       `Ошибка: ${error.message}`,
-      new Date().toISOString()
+      getLocalTimestamp()
     ]);
   } finally {
     // Закрываем прокси, если был
@@ -514,7 +521,7 @@ async function watchSettingsLoop(sheets) {
         logger.info(`Нужно сделать проверку. Number of required checks = ${requiredChecks}`);
 
         // Записываем время старта и сбрасываем "Rows processed"
-        settings.lastRunStart = new Date().toISOString();
+        settings.lastRunStart = getLocalTimestamp();
         settings.lastRunEnd = ''; // Пока пусто
         settings.rowsProcessed = 0;
         // Обновляем concurrency (вдруг поменяли)
@@ -527,7 +534,7 @@ async function watchSettingsLoop(sheets) {
         const rowsProcessed = await runDefaultSheet(sheets);
 
         // Обновляем настройки после выполнения: записываем время завершения и количество обработанных строк
-        settings.lastRunEnd = new Date().toISOString();
+        settings.lastRunEnd = getLocalTimestamp();
         settings.rowsProcessed = rowsProcessed;
 
         // Уменьшаем requiredChecks на 1 (однократно)
