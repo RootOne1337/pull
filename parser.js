@@ -248,7 +248,7 @@ async function processRow(rowData, rowIndex, sheets) {
         logger.success(`Парсинг завершён. Всего результатов: ${data.length}`);
 
         // Определяем позицию организации
-        let positionInRanking = 'Not found';
+        let positionInRanking = '0';
         const foundIndex = data.findIndex(
           item => item.name.toLowerCase() === orgName.toLowerCase()
         );
